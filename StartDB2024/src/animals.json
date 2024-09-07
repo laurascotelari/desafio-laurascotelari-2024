@@ -1,0 +1,8 @@
+[
+    { "species": "LEAO", "size": 3, "biome": "savana" },
+    { "species": "LEOPARDO", "size": 2, "biome": "savana" },
+    { "species": "CROCODILO", "size": 3, "biome": "rio" },
+    { "species": "MACACO", "size": 1, "biome": "savana ou floresta" },
+    { "species": "GAZELA", "size": 2, "biome": "savana" },
+    { "species": "HIPOPOTAMO", "size": 4, "biome": "savana ou rio" }
+]

@@ -1,0 +1,27 @@
+[{
+        "number": 1,
+        "biome": "savana",
+        "totalSize": 10,
+        "currAnimal": "3 macacos"
+    }, {
+        "number": 2,
+        "biome": "floresta",
+        "totalSize": 5,
+        "currAnimal": "vazio"
+    }, {
+        "number": 3,
+        "biome": "savana e rio",
+        "totalSize": 7,
+        "currAnimal": "1 gazela"
+    }, {
+        "number": 4,
+        "biome": "rio",
+        "totalSize": 8,
+        "currAnimal": "vazio"
+    }, {
+        "number": 5,
+        "biome": "savana",
+        "totalSize": 9,
+        "currAnimal": "1 leão"
+}]
+
