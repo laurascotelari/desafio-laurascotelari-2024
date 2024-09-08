@@ -13,7 +13,7 @@ class RecintosZoo {
             const json = JSON.parse(data); 
             return json;  
         } catch (err) {
-            console.error("Erro na leitura do arquivo:", err);
+            return { erro: "Erro na leitura do arquivo:", recintosViaveis: null };
         }
     }
 
@@ -48,7 +48,6 @@ class RecintosZoo {
             const animalList = await this.readData('./src/animals.json');
 
             const newAnimalSpecies = animal.toUpperCase();
-            console.log(newAnimalSpecies);
 
             //transformando a lista de animais em um dicionário, para facilitar a manipulação
             const validAnimals = animalList.reduce((acc, animal) => {
@@ -60,7 +59,6 @@ class RecintosZoo {
             if(validAnimals[newAnimalSpecies] != null){
                 const biomes = this.tokenizeSentence(validAnimals[newAnimalSpecies].biome);
                 const newAnimal = new Animal(animal, validAnimals[newAnimalSpecies].size, biomes);
-                console.log(newAnimal.biome);
             
                 //lendo a lista com as informações atuais de recintos e separando os biomas 
                 const enclosureList = await this.readData('./src/enclosure.json');
@@ -68,7 +66,6 @@ class RecintosZoo {
                 for(let i = 0; i < enclosureList.length; i++){
                     enclosureList[i].biome = this.tokenizeSentence(enclosureList[i].biome);
                     const tokensOccupation = this.tokenizeSentence(enclosureList[i].currAnimal);
-                    console.log(tokensOccupation);
                     let occupiedArea = 0;
                     let currAnimal = "VAZIO";
 
@@ -103,7 +100,7 @@ class RecintosZoo {
                     filterEnclosures = validEnclosures.filter(function (el) {
                         return el.biome.some(element => newAnimal.biome.includes(element)) &&
                         el.occupiedArea + area <= el.totalSize &&
-                        el.currAnimal === newAnimal.species 
+                        (el.currAnimal === newAnimal.species || el.currAnimal === "VAZIO")
                     });
                 }else if(newAnimal.species === "HIPOPOTAMO"){
                     filterEnclosures = validEnclosures.filter(function (el) {
@@ -112,28 +109,30 @@ class RecintosZoo {
                         ((newAnimal.species === el.currAnimal && el.occupiedArea + area <= el.totalSize)
                         ||(newAnimal.species !== el.currAnimal && el.occupiedArea + area + 1 <= el.totalSize && (el.biome.includes('savana') && el.biome.includes('rio'))))
                     });
-
                 }
                 
-                console.log(filterEnclosures);
-
-                const recintosViaveis = [];
-                //mostrando na tela os possíveis recintos
-                for(let i = 0; i < filterEnclosures.length; i++){
-                    //se os animais sao diferentes, um espaco a mais e considerado ocupado
-                    if(newAnimal.species !== filterEnclosures[i].currAnimal && filterEnclosures[i].currAnimal !== "VAZIO"){
-                        recintosViaveis.push(filterEnclosures[i].printEnclosure(area + 1));
-                    }else{
-                        recintosViaveis.push(filterEnclosures[i].printEnclosure(area));
+                if(filterEnclosures.length < 1){
+                    return { erro: "Não há recinto viável", recintosViaveis: null };
+                }else{
+                    const recintosViaveis = [];
+                    //mostrando na tela os possíveis recintos
+                    for(let i = 0; i < filterEnclosures.length; i++){
+                        //se os animais sao diferentes, um espaco a mais e considerado ocupado
+                        if(newAnimal.species !== filterEnclosures[i].currAnimal && filterEnclosures[i].currAnimal !== "VAZIO"){
+                            recintosViaveis.push(filterEnclosures[i].printEnclosure(area + 1));
+                        }else{
+                            recintosViaveis.push(filterEnclosures[i].printEnclosure(area));
+                        }
                     }
+                    return { erro: null, recintosViaveis: recintosViaveis };
                 }
-                console.log(JSON.stringify({ recintosViaveis: recintosViaveis }, null, 2));
+
                 
             }else{
-                console.error("Animal inválido");
+                return { erro: "Animal inválido", recintosViaveis: null };
             }
         }else{
-            console.error("Quantidade inválida");
+            return { erro: "Quantidade inválida", recintosViaveis: null };
         }
 
 
