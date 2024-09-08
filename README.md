@@ -40,11 +40,6 @@ O zoológico só está habilitado a tratar dos animais abaixo. A tabela mostra o
 - Quando há mais de uma espécie no mesmo recinto, é preciso considerar 1 espaço extra ocupado.
 - Não é possível separar os lotes de animais nem trocar os animais que já existem de recinto (eles são muito apegados!). Por exemplo, se chegar um lote de 12 macacos, não é possível colocar 6 em 2 recintos.
 
-## ENTRADAS E SAÍDAS
-
-O programa deve receber tipo e quantidade de animal (nessa ordem).
-
-O programa deve retornar uma estrutura contendo a lista de todos os recintos viáveis ordenada pelo número do recinto (caso existam) e a mensagem de erro (caso exista).
-
-A lista de recintos viáveis deve indicar o espaço livre que restaria após a inclusão do(s) animal(is) e o espaço total, no formato:
+## Solução Desenvolvida
+Com o intuito de resolver o problema proposto, foram criadas mais duas classes, Animal e Enclosure, além de dois arquvios JSON contendo as informações relevantes dos recintos disponíveis e dos possíveis animais. Além disso, para garantir uma boa cobertura, foram elaborados mais 4 casos de teste. 
 
