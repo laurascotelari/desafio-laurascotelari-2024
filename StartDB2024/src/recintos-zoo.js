@@ -29,6 +29,16 @@ class RecintosZoo {
         return tokensList;
     }
 
+    //tratamento dos nomes de animais
+    animalNameHandling(originalName){
+        //tratamento do nome dos animais, deixando em caixa alta e retirando acentos
+        let animalName = (originalName.toUpperCase()).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if(animalName[originalName.length - 1] === 'S'){
+            //removendo a ultima letra da palavra
+            animalName = animalName.slice(0, -1);
+        }
+        return animalName;
+    }
 
     async analisaRecintos(animal, quantidade) {
 
@@ -52,9 +62,6 @@ class RecintosZoo {
                 const newAnimal = new Animal(animal, validAnimals[newAnimalSpecies].size, biomes);
                 console.log(newAnimal.biome);
             
-                //area ocupada pelos novos animais
-                const area = newAnimal.size * quantidade;
-
                 //lendo a lista com as informações atuais de recintos e separando os biomas 
                 const enclosureList = await this.readData('./src/enclosure.json');
                 const validEnclosures = [];
@@ -63,31 +70,64 @@ class RecintosZoo {
                     const tokensOccupation = this.tokenizeSentence(enclosureList[i].currAnimal);
                     console.log(tokensOccupation);
                     let occupiedArea = 0;
-                    
+                    let currAnimal = "VAZIO";
+
                     //calculando a area ocupada para o caso do recinto nao estar vazio
                     if(tokensOccupation[0] !== "vazio"){
-                        //tratamento do nome dos animais
-                        let animalName = (tokensOccupation[1].toUpperCase());
-                        if(animalName[animal.length] === 'S'){
-                            //removendo a ultima letra da palavra
-                            animalName = animalName.slice(0, -1);
-                        }
-                        console.log(animalName);
-
-                        occupiedArea = parseInt(tokensOccupation[0]) * validAnimals[animalName].size;
-                        console.log(occupiedArea);
+                        currAnimal = this.animalNameHandling(tokensOccupation[1]);
+                        //calculando a area ocupada com os animais que ja estao la
+                        occupiedArea = parseInt(tokensOccupation[0]) * validAnimals[currAnimal].size;
                     }
 
-                    const enclosure = new Enclosure(enclosureList[i].number, enclosureList[i].biome, enclosureList[i].totalSize, occupiedArea);
+                    const enclosure = new Enclosure(enclosureList[i].number, enclosureList[i].biome, enclosureList[i].totalSize, occupiedArea, currAnimal);
                     validEnclosures.push(enclosure);
                 }
 
-                //filtrando a lista de recintos de acordo com o bioma
-                const filterEnclosures = validEnclosures.filter(function (el) {
-                    return el.biome.some(element => newAnimal.biome.includes(element))
-                });
+                //area ocupada pelos novos animais
+                const area = newAnimal.size * quantidade;
+                const carnivoresList = ["LEAO", "LEOPARDO", "CROCODILO"];
+                let filterEnclosures = [];
+                
+                //filtrando os recintos de acordo com as restricoes especificas dos animais
+                if(newAnimal.species === "MACACO" || newAnimal.species === "GAZELA"){
+                    filterEnclosures = validEnclosures.filter(function (el) {
+                        return el.biome.some(element => newAnimal.biome.includes(element)) &&
+                        ((newAnimal.species === "MACACO" && (el.currAnimal !== "VAZIO" || quantidade > 1)) || newAnimal.species === "GAZELA") &&
+                        !carnivoresList.includes(el.currAnimal) &&
+                        ((newAnimal.species === el.currAnimal && el.occupiedArea + area <= el.totalSize)
+                        ||(newAnimal.species !== el.currAnimal && el.occupiedArea + area + 1 <= el.totalSize))
+                    });
+                    
+                }else if(carnivoresList.includes(newAnimal.species)){
+                    //animais carnivoros devem habitar apenas recintos com animais da mesma especie
+                    filterEnclosures = validEnclosures.filter(function (el) {
+                        return el.biome.some(element => newAnimal.biome.includes(element)) &&
+                        el.occupiedArea + area <= el.totalSize &&
+                        el.currAnimal === newAnimal.species 
+                    });
+                }else if(newAnimal.species === "HIPOPOTAMO"){
+                    filterEnclosures = validEnclosures.filter(function (el) {
+                        return el.biome.some(element => newAnimal.biome.includes(element))&&
+                        !carnivoresList.includes(el.currAnimal) &&
+                        ((newAnimal.species === el.currAnimal && el.occupiedArea + area <= el.totalSize)
+                        ||(newAnimal.species !== el.currAnimal && el.occupiedArea + area + 1 <= el.totalSize && (el.biome.includes('savana') && el.biome.includes('rio'))))
+                    });
 
+                }
+                
                 console.log(filterEnclosures);
+
+                const recintosViaveis = [];
+                //mostrando na tela os possíveis recintos
+                for(let i = 0; i < filterEnclosures.length; i++){
+                    //se os animais sao diferentes, um espaco a mais e considerado ocupado
+                    if(newAnimal.species !== filterEnclosures[i].currAnimal && filterEnclosures[i].currAnimal !== "VAZIO"){
+                        recintosViaveis.push(filterEnclosures[i].printEnclosure(area + 1));
+                    }else{
+                        recintosViaveis.push(filterEnclosures[i].printEnclosure(area));
+                    }
+                }
+                console.log(JSON.stringify({ recintosViaveis: recintosViaveis }, null, 2));
                 
             }else{
                 console.error("Animal inválido");
